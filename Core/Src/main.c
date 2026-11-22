@@ -1,4 +1,3 @@
-
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
@@ -19,13 +18,15 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "i2c.h"
 #include "spi.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
-
+#include "BME280_STM32.h"
+#include <stdlib.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -487,13 +488,16 @@ int main(void)
   MX_GPIO_Init();
   MX_SPI2_Init();
   MX_SPI3_Init();
+  MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
   LCD_Init();
 
    LCD_Fill(BLACK);
 	  LCD_DrawCircle(120, 120, 115, WHITE);
 LCD_DrawStringCentered(100, "1. Test String", 0x5566,0x0000, 2);
-  /* USER CODE END 2 */
+int  bmeStatus = BME280_Config(OSRS_2, OSRS_16, OSRS_1, MODE_NORMAL, T_SB_0p5, IIR_16);
+LCD_DrawStringCentered(150, (char)bmeStatus, 0x5566,0x0000, 2);
+/* USER CODE END 2 */
 
   /* Initialize led */
   BSP_LED_Init(LED_GREEN);
@@ -514,6 +518,10 @@ LCD_DrawStringCentered(100, "1. Test String", 0x5566,0x0000, 2);
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  float temperature = 0.0f;
+  float pressure = 0.0f;
+  float humidity = 0.0f;
+
   while (1)
   {
       HAL_Delay(1000);
@@ -525,7 +533,8 @@ LCD_DrawStringCentered(100, "1. Test String", 0x5566,0x0000, 2);
 	    //LCD_FillRect(90,  90,  60,  60,  WHITE);
 	    //HAL_Delay(1000);
 	    //LCD_Fill(BLACK);
-
+      BME280_Measure(&temperature, &pressure, &humidity);
+      printf("T=%d.%02d C  P=%ld Pa  ID=0x%02X\r\n", (int)temperature, abs((int)(temperature * 100) % 100),   (long)pressure, chipID);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
